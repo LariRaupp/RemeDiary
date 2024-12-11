@@ -13,11 +13,12 @@ const storage = multer.diskStorage({
         cb(null, 'uploads/');
     },
     filename: function (req, file, cb) {
-        cb(null, file.originalname);
+        cb(null, `${Date.now()}-${file.originalname}`);
     }
-})
+});
 
-const upload = multer({ dest: "./uploads" , storage})
+const upload = multer({ storage });
+
 
 const routes = (app) => {
     // Habilita o parser JSON para lidar com requisições com corpo JSON
