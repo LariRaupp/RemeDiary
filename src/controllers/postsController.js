@@ -19,9 +19,10 @@ export async function criarNovoPost(req, res) {
 }
 
 export async function uploadImagem(req, res) {
+    const imgUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
     const novoPost = {
         descricao: "",
-        imgUrl: "",
+        imgUrl, // Adiciona a URL completa
         alt: ""
     };
 
@@ -29,18 +30,13 @@ export async function uploadImagem(req, res) {
         const postCriado = await criarPost(novoPost);
         const imagemAtualizada = `uploads/${postCriado.insertedId}.png`;
         fs.renameSync(req.file.path, imagemAtualizada);
-    
-        // Atualizar o campo imgUrl
-        const imgUrl = `${req.protocol}://${req.get('host')}/${imagemAtualizada}`;
-        await atualizarPost(postCriado.insertedId, { imgUrl });
-    
-        // Retornar a resposta correta
-        res.status(200).json({ ...postCriado, imgUrl });
+        res.status(200).json(postCriado);
     } catch (erro) {
         console.error(erro.message);
         res.status(500).json({ 'erro': 'falha na requisição' });
     }
-}    
+}
+ 
 
 export async function atualizarNovoPost(req, res) {
     const id = req.params.id;
@@ -50,11 +46,10 @@ export async function atualizarNovoPost(req, res) {
         const imgBuffer = fs.readFileSync(`uploads/${id}.png`);
         const altTxt = await gerarDescricaoComGemini(imgBuffer);
         const postAtualizado = {
-            imgUrl: imgUrl,
+            imgUrl, // Adiciona a URL completa
             descricao: req.body.descricao,
             alt: altTxt
         };
-
         const postCriado = await atualizarPost(id, postAtualizado);
         res.status(200).json(postCriado);
     } catch (erro) {
@@ -62,3 +57,4 @@ export async function atualizarNovoPost(req, res) {
         res.status(500).json({ 'erro': 'falha na requisição' });
     }
 }
+
